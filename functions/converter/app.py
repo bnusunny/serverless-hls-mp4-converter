@@ -12,6 +12,7 @@ s3_client = boto3.client('s3', os.environ['AWS_REGION'], config=Config(
     s3={'addressing_style': 'path'}))
 efs_path = os.environ['EFS_PATH']
 
+
 def lambda_handler(event, context):
     # extract playlist object info from event
     bucket = event['detail']['recording_s3_bucket_name']
@@ -28,51 +29,60 @@ def lambda_handler(event, context):
     output_name = os.path.join(output_dir, output_filename)
 
     # parse master.m3u8 to find out highest bandwidth stream and get the segment file names
-    print('downloading ' + s3_ojbect_key)
+    print('downloading ' + bucket + '/' + s3_ojbect_key)
     s3_client.download_file(bucket, s3_ojbect_key, output_dir + '/master.m3u8')
     playlist_obj = m3u8.load(output_dir + '/master.m3u8')
-    if playlist_obj.is_variant: 
+    if playlist_obj.is_variant:
         playlist = playlist_obj.playlists[0]
         playlist_filename = os.path.join(output_dir, playlist.uri)
+        s3_prefix = prefix+'/media/hls'
         # check if the playlist.uri contains directory
-        if playlist.uri.find('/'): 
-            dir = os.path.dirname(playlist_filename)
-            if not os.path.exists(dir):
-                os.makedirs(os.path.dirname(dir))
-        s3_client.download_file(bucket, prefix + '/media/hls/'+playlist.uri, playlist_filename)
+        playlist_dir = os.path.dirname(playlist_filename)
+        if playlist.uri.find('/'):
+            if not os.path.exists(playlist_dir):
+                os.makedirs(playlist_dir)
+            s3_prefix = s3_prefix + '/' + playlist.uri.split('/')[0]
+        s3_client.download_file(
+            bucket, prefix + '/media/hls/'+playlist.uri, playlist_filename)
         target_playlist_obj = m3u8.load(playlist_filename)
 
-    #download hls segments from S3 to oupput_dir
-    download_segments(bucket, prefix+'/media/hls', target_playlist_obj.segments, output_dir)
+    # download hls segments from S3 to oupput_dir
+    download_segments(bucket, s3_prefix,
+                      target_playlist_obj.segments, playlist_dir)
 
     # convert hls to mp4 using ffmpeg
     print('Start to convert hls to mp4')
-    cmd = ['ffmpeg', '-loglevel', 'error', '-i', output_dir+'/master.m3u8', '-c', 'copy', '-y', output_name]
+    cmd = ['ffmpeg', '-loglevel', 'error', '-i', output_dir +
+           '/master.m3u8', '-c', 'copy', '-y', output_name]
     subprocess.check_output(cmd)
 
     # upload the output video to S3
     print('Start to upload mp4 to S3')
     s3_output_key = prefix + '/media/' + output_filename
-    s3_client.upload_file(output_name, bucket, s3_output_key, ExtraArgs={'ContentType': 'video/mp4'})
+    s3_client.upload_file(output_name, bucket, s3_output_key, ExtraArgs={
+                          'ContentType': 'video/mp4'})
 
     # delete the temp output directory
     shutil.rmtree(output_dir)
 
     print('Done')
-    
+
     return {
         'bucket': bucket,
         'key': s3_output_key
     }
 
+
 def download_object(bucket, object_key, target_file):
     session = boto3.session.Session()
     s3 = session.client('s3', os.environ['AWS_REGION'], config=Config(
-        s3={'addressing_style': 'path'}))
+                        s3={'addressing_style': 'path'}))
+    # print('start to download '+bucket+'/'+object_key+' to '+target_file)
     s3.download_file(bucket, object_key, target_file)
 
 
 def download_segments(bucket_name, prefix, segments, local_dir=None):
     with concurrent.futures.ThreadPoolExecutor() as e:
         for segment in segments:
-            e.submit(download_object, bucket_name, prefix+'/'+segment.uri, local_dir+'/'+segment.uri)
+            e.submit(download_object, bucket_name, prefix +
+                     '/'+segment.uri, local_dir+'/'+segment.uri)

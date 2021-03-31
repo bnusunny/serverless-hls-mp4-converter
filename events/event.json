@@ -1,0 +1,20 @@
+{
+  "version": "0",
+  "id": "12345678-1a23-4567-a1bc-1a2b34567890", 
+  "detail-type": "IVS Recording State Change", 
+  "source": "aws.ivs",
+  "account": "123456789012",
+  "time": "2020-06-24T07:51:32Z", 
+  "region": "ap-southeast-1", 
+  "resources": [
+    "arn:aws:ivs:ap-southeast-1:123456789012:channel/AbCdef1G2hij"
+  ],
+  "detail": {
+    "channel_name": "Your Channel",
+    "stream_id": "st-1F6jDj0t3zV01cXKe5dScIJ", 
+    "recording_status": "Recording End", 
+    "recording_status_reason": "",
+    "recording_s3_bucket_name": "mediaconvert-ap-sourtheast-1", 
+    "recording_s3_key_prefix": "ivs/123456789012/AbCdef1G2hij/2020-06-23T20-12-32.152Z/a1B2345cdeFg" 
+  }
+}

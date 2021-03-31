@@ -52,7 +52,7 @@ Resources:
       CodeUri: functions/converter/
       Handler: app.lambda_handler
       Runtime: python3.8
-      MemorySize: 10240
+      MemorySize: 2048
       Timeout: 900
       Policies:
         - S3ReadPolicy:

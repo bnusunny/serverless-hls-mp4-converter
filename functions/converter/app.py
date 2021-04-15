@@ -10,7 +10,6 @@ from botocore.config import Config
 
 s3_client = boto3.client('s3', os.environ['AWS_REGION'], config=Config(
     s3={'addressing_style': 'path'}))
-efs_path = os.environ['EFS_PATH']
 
 
 def lambda_handler(event, context):
@@ -20,7 +19,7 @@ def lambda_handler(event, context):
     s3_ojbect_key = prefix + '/media/hls/master.m3u8'
 
     # create temp output directory
-    output_dir = os.path.join(efs_path, str(uuid.uuid4()))
+    output_dir = os.path.join('/tmp', str(uuid.uuid4()))
     try:
         os.mkdir(output_dir)
     except FileExistsError as error:

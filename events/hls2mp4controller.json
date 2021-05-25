@@ -1,0 +1,15 @@
+{
+  "job_id": "1717c310-8431-44db-8a13-bf6285a72712",
+  "playlists": [
+    "s3://ivs-stream-recordings-eu-west-1/ivs/v1/596963228260/TQUXBFALFYt5/2021/4/15/13/18/zLOlY2bzNxk7/media/hls/master.m3u8",
+    "s3://ivs-stream-recordings-eu-west-1/ivs/v1/596963228260/TQUXBFALFYt5/2021/4/15/13/21/ZK7QaEOcGekH/media/hls/master.m3u8",
+    "s3://ivs-stream-recordings-eu-west-1/ivs/v1/596963228260/TQUXBFALFYt5/2021/4/15/13/22/PLgdKPSf0eak/media/hls/master.m3u8"
+  ],
+  "options": {
+    "resolution": "720",
+    "bitrate": "ORIGINAL",
+    "codec": "ORIGINAL",
+    "manualOptions": "",
+    "audio_only": false
+  }
+}

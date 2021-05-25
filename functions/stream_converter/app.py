@@ -15,8 +15,8 @@ def lambda_handler(event, context):
     playlist_object_name = event['playlist']
 
     local_playlist = '/tmp/' + playlist_object_name
-    print('bucket: ' + bucket)
-    print('object: ' + prefix + playlist_object_name)
+    # print('bucket: ' + bucket)
+    # print('object: ' + prefix + playlist_object_name)
     s3_client.download_file(
         bucket, prefix + playlist_object_name, local_playlist)
 
@@ -37,8 +37,6 @@ def lambda_handler(event, context):
     # merge the hls files on the fly and stream the merged video to s3
     print('Start to convert hls to mp4')
     output_name = 's3://'+bucket+'/'+prefix+str(uuid.uuid4())+'_recording.mp4'
-    # cmd = ['ffmpeg', '-loglevel', 'error', '-protocol_whitelist', 'file,http,https,tls,tcp', '-i', processed_playlist,
-        #    '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', '-bsf:a', 'aac_adtstoasc', '-c', 'copy', '-', '|', 'aws', 's3', 'cp', '-', output_name]
     cmd = 'ffmpeg -v error -protocol_whitelist file,http,https,tls,tcp -i '+processed_playlist+' -f mp4 -movflags frag_keyframe+empty_moov -bsf:a aac_adtstoasc -c copy - | /opt/awscli/aws s3 cp - ' + output_name
     subprocess.check_output(cmd, shell=True)
 

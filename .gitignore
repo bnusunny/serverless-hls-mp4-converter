@@ -189,6 +189,7 @@ celerybeat-schedule.*
 # Environments
 .env
 .venv
+.venv*
 env/
 venv/
 ENV/
@@ -247,3 +248,4 @@ videos
 .vscode
 .aws-sam
 samconfig.toml
+tests

@@ -24,37 +24,111 @@ Resources:
         - python3.7
         - python3.6
 
-  StreamConvertFunction:
+  # ConvertFunction:
+  #   Type: AWS::Serverless::Function 
+  #   Properties:
+  #     CodeUri: functions/converter/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.7
+  #     MemorySize: 2048
+  #     Timeout: 900
+  #     Tracing: Active
+  #     Policies:
+  #       - S3ReadPolicy:
+  #           BucketName: !Ref IVSBucketName
+  #       - S3WritePolicy:
+  #           BucketName: !Ref IVSBucketName
+  #     Layers:
+  #       - !Ref FFmpegLayer
+  #     Events:
+  #       Trigger:
+  #         Type: CloudWatchEvent
+  #         Properties:
+  #           Pattern:
+  #             source:
+  #               - aws.ivs
+  #             detail-type:
+  #               - IVS Recording State Change
+  #             detail:
+  #               recording_status:
+  #                 - Recording End
+
+  # StreamConvertApp:
+  #   Type: AWS::Serverless::Function 
+  #   Properties:
+  #     CodeUri: functions/stream_converter/
+  #     Handler: api.lambda_handler
+  #     Runtime: python3.7
+  #     MemorySize: 2048
+  #     Timeout: 29
+  #     Tracing: Active
+  #     Policies:
+  #       - S3ReadPolicy:
+  #           BucketName: !Ref IVSBucketName
+  #       - S3WritePolicy:
+  #           BucketName: !Ref IVSBucketName
+  #     Layers:
+  #       - !Ref FFmpegLayer
+  #       - 'arn:aws:lambda:ap-southeast-1:373534280245:layer:serverlessrepo-lambda-layer-awscli:1'
+  #     Events:
+  #       Trigger:
+  #         Type: HttpApi
+  #         Properties:
+  #           Path: /
+  #           Method: get
+
+  HLSMP4Controller:
     Type: AWS::Serverless::Function 
     Properties:
-      CodeUri: functions/stream_converter/
+      CodeUri: functions/hls-2-mp4-controller/
       Handler: app.lambda_handler
       Runtime: python3.7
       MemorySize: 2048
-      Timeout: 900
+      Timeout: 29
       Tracing: Active
+
+  HLSMP4MergeHLS:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/hls-2-mp4-mergehls/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      MemorySize: 2048
+      Timeout: 29
+      Tracing: Active
+      Layers:
+        - !Ref FFmpegLayer
+        - 'arn:aws:lambda:eu-central-1:596963228260:layer:serverlessrepo-lambda-layer-awscli:1'
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref IVSBucketName
         - S3WritePolicy:
             BucketName: !Ref IVSBucketName
+
+  HLSMP4MergePlaylists:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/hls-2-mp4-mergeplaylists/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      MemorySize: 2048
+      Timeout: 29
+      Tracing: Active
       Layers:
         - !Ref FFmpegLayer
-      Events:
-        Trigger:
-          Type: CloudWatchEvent
-          Properties:
-            Pattern:
-              source:
-                - aws.ivs
-              detail-type:
-                - IVS Recording State Change
-              detail:
-                recording_status:
-                  - Recording End
+        - 'arn:aws:lambda:eu-central-1:596963228260:layer:serverlessrepo-lambda-layer-awscli:1'
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref IVSBucketName
+        - S3WritePolicy:
+            BucketName: !Ref IVSBucketName
 
-Outputs:
-  StreamConvertFunction:
-    Description: "StreamConvert Lambda Function ARN"
-    Value: !GetAtt StreamConvertFunction.Arn
-
+  triggerhls:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/hls-2-mp4-trigger-hls/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      MemorySize: 2048
+      Timeout: 29
+      Tracing: Active
